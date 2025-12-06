@@ -1,0 +1,100 @@
+version: "3.9"
+
+services:
+  # =========================
+  # 🧩 MongoDB Database (unique)
+  # =========================
+  mongodb:
+    image: mongo:7
+    container_name: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # =========================
+  # 🌐 API Gateway
+  # =========================
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./services/api-gateway/.env
+    depends_on:
+      - auth-service
+      - academic-service
+      - ia-service
+    environment:
+      - NODE_ENV=production
+    command: ["node", "server.js"]
+
+  # =========================
+  # 🔐 Auth Service
+  # =========================
+  auth-service:
+    build: ./services/auth-service
+    container_name: auth-service
+    restart: always
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./services/auth-service/.env
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/edu_platform
+    depends_on:
+      - mongodb
+    command: ["node", "server.js"]
+
+  # =========================
+  # 🎓 Academic Service
+  # =========================
+  academic-service:
+    build: ./services/academic-service
+    container_name: academic-service
+    restart: always
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./services/academic-service/.env
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/edu_platform
+    depends_on:
+      - mongodb
+      - pdf-extractor
+    volumes:
+      - ./services/academic-service/uploads:/app/uploads
+    command: ["node", "server.js"]
+
+  # =========================
+  # 🤖 IA Service (FastAPI)
+  # =========================
+  ia-service:
+    build:
+      context: ./services/ia-service
+    container_name: ia-service
+    restart: always
+    ports:
+      - "4003:4003"
+    env_file:
+      - ./services/ia-service/.env
+    depends_on:
+      - mongodb
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4003"]
+
+  # =========================
+  # 📄 PDF Extractor Service
+  # =========================
+  pdf-extractor:
+    build: ./services/pdf-extractor
+    container_name: pdf-extractor
+    restart: always
+    ports:
+      - "5001:5001"
+    command: ["python", "app.py"]
+
+volumes:
+  mongo_data:
