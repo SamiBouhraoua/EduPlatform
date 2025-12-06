@@ -87,9 +87,9 @@ async def chat_message(request: ChatRequest):
 
         # 4. Call Groq
         completion = await groq_client.chat.completions.create(
-            model="llama-3.1-8b-instant", # Use fast model
+            model="llama-3.3-70b-versatile", # Newest model
             messages=messages,
-            temperature=0.3, # Lower temperature to reduce hallucinations
+            temperature=0.3, 
             max_tokens=800
         )
 
