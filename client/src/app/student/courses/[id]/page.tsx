@@ -178,12 +178,11 @@ export default function StudentCourseDetails() {
                 <span className="font-medium text-white">{doc.name}</span>
 
                 <a
-                  href={doc.url}
+                  href={doc.url.replace("localhost", "127.0.0.1")}
                   target="_blank"
-                  download
-                  className="text-indigo-400 hover:text-indigo-300 underline font-semibold transition"
+                  className="relative z-50 pointer-events-auto bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg font-medium transition shadow-lg shadow-indigo-500/20"
                 >
-                  Télécharger →
+                  Télécharger
                 </a>
               </li>
             ))}

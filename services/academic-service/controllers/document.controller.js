@@ -1,10 +1,7 @@
 import Document from "../models/Document.js";
 import fs from "fs";
 import path from "path";
-import FormData from "form-data";
-import fetch from "node-fetch";
 
-const PDF_EXTRACTOR_URL = process.env.PDF_EXTRACTOR_URL || "http://pdf-extractor:5001";
 
 /* ============================================================
    UPLOAD DOCUMENT (nom + fichier)
@@ -113,52 +110,4 @@ export const deleteDocument = async (req, res) => {
   }
 };
 
-/* ============================================================
-   GET DOCUMENT CONTENT (TEXT)
-============================================================ */
-export const getDocumentContent = async (req, res) => {
-  try {
-    const doc = await Document.findOne({
-      _id: req.params.id,
-      collegeId: req.collegeId,
-    });
 
-    if (!doc) {
-      return res.status(404).json({ message: "Document non trouvé" });
-    }
-
-    const filename = doc.url.split("/").pop();
-    const filePath = path.join("uploads", "documents", filename);
-
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: "Fichier physique introuvable" });
-    }
-
-    // Simple extension check
-    if (filename.toLowerCase().endsWith(".pdf")) {
-      // Call PDF extractor service
-      const formData = new FormData();
-      formData.append('file', fs.createReadStream(filePath));
-
-      const response = await fetch(`${PDF_EXTRACTOR_URL}/extract`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('PDF extraction failed');
-      }
-
-      const data = await response.json();
-      return res.json({ content: data.content });
-    } else {
-      // For text files, just read as utf-8
-      const text = fs.readFileSync(filePath, "utf-8");
-      return res.json({ content: text });
-    }
-
-  } catch (error) {
-    console.error("❌ ERREUR CONTENT:", error);
-    res.status(500).json({ message: "Erreur lors de la lecture du contenu" });
-  }
-};

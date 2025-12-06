@@ -8,7 +8,7 @@ import {
   updateDocument,
   deleteDocument,
   listDocumentsByCourse,
-  getDocumentContent
+
 } from "../controllers/document.controller.js";
 
 const router = express.Router();
@@ -28,7 +28,6 @@ router.put("/:id", requireCollege, updateDocument);
 // Supprimer
 router.delete("/:id", requireCollege, deleteDocument);
 
-// Contenu (Texte)
-router.get("/:id/content", requireCollege, getDocumentContent);
+
 
 export default router;

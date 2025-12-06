@@ -9,6 +9,8 @@ interface Message {
     content: string;
 }
 
+import { createPortal } from "react-dom";
+
 export default function ChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
@@ -16,7 +18,12 @@ export default function ChatWidget() {
     ]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -74,19 +81,20 @@ export default function ChatWidget() {
         }
     };
 
-    return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end pointer-events-none">
+    if (!mounted) return null;
 
+    return createPortal(
+        <>
             {/* Chat Window */}
             <div
+                style={{ position: "fixed", bottom: "100px", right: "24px", zIndex: 99999 }}
                 className={`
-          pointer-events-auto
-          mb-4 w-[380px] h-[550px] 
-          bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 
-          rounded-2xl shadow-2xl flex flex-col overflow-hidden
-          transition-all duration-300 ease-in-out origin-bottom-right
-          ${isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4 pointer-events-none absolute bottom-0 right-0 h-[0px] w-[0px]"}
-        `}
+                    w-[380px] h-[550px] 
+                    bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 
+                    rounded-2xl shadow-2xl flex flex-col overflow-hidden
+                    transition-all duration-300 ease-in-out origin-bottom-right
+                    ${isOpen ? "opacity-100 scale-100 translate-y-0 pointer-events-auto" : "opacity-0 scale-95 translate-y-4 pointer-events-none"}
+                `}
             >
                 {/* Header */}
                 <div className="p-4 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between shrink-0">
@@ -165,13 +173,12 @@ export default function ChatWidget() {
             {/* FAB Button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                style={{ position: "fixed", bottom: "24px", right: "24px", zIndex: 99999 }}
                 className={`
-          pointer-events-auto
           group relative flex items-center justify-center w-14 h-14 
           bg-gradient-to-r from-indigo-600 to-purple-600 
           rounded-full shadow-lg shadow-indigo-600/30
           hover:scale-110 active:scale-95 transition-all duration-300
-          z-50
         `}
             >
                 <div className="absolute inset-0 bg-white/20 rounded-full animate-ping opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -186,7 +193,7 @@ export default function ChatWidget() {
                     <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 border-2 border-slate-950 rounded-full" />
                 )}
             </button>
-
-        </div>
+        </>,
+        document.body
     );
 }
