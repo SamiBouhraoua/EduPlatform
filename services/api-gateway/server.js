@@ -64,6 +64,19 @@ app.use(
   })
 );
 
+// ***** CHAT AI PROXY *****
+app.use(
+  "/chat",
+  proxy(process.env.CHATAI_SERVICE_URL || "http://chatai-service:5002", {
+    proxyReqPathResolver: (req) => `/chat${req.url}`,
+    proxyReqOptDecorator: (opts, req) => {
+      opts.headers["authorization"] = req.headers.authorization || "";
+      opts.headers["content-type"] = "application/json";
+      return opts;
+    },
+  })
+);
+
 
 // ***** AUTH SERVICE *****
 app.use("/", proxy(AUTH_SERVICE_URL, {

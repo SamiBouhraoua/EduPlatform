@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+motor
+groq
+pydantic
+python-dotenv
+httpx
+jinja2

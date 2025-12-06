@@ -1,5 +1,6 @@
 import SidebarStudent from "@/components/layout/student/Sidebar";
 import NavbarTeacher from "@/components/layout/Navbar";
+import ChatWidget from "@/components/ChatWidget";
 
 export default function StudentLayout({ children }: any) {
   return (
@@ -22,6 +23,9 @@ export default function StudentLayout({ children }: any) {
             {children}
           </main>
         </div>
+
+        {/* Chat Widget */}
+        <ChatWidget />
       </div>
     </div>
   );
