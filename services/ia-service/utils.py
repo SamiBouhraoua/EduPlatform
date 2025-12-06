@@ -41,15 +41,49 @@ def safe_parse_json(text: str) -> Dict[str, Any]:
         "quiz": []
     }
 
-async def fetch_document_content(client: httpx.AsyncClient, doc_id: str, doc_name: str) -> str:
-    """Fetch content for a single document asynchronously"""
+async def fetch_document_content(client: httpx.AsyncClient, doc_url: str, doc_name: str) -> str:
+    """Fetch content for a single document from local storage (or pdf-extractor)"""
     try:
-        resp = await client.get(f"{ACADEMIC_SERVICE_URL}/documents/{doc_id}/content", timeout=10.0)
-        if resp.status_code == 200:
-            content = resp.json().get("content", "")
-            return f"\n--- Document: {doc_name} ---\n{content[:2000]}"
+        # Extract filename from URL (e.g., http://.../uploads/documents/file.pdf -> file.pdf)
+        filename = doc_url.split("/")[-1]
+        file_path = f"/app/uploads/documents/{filename}"
+        
+        if not os.path.exists(file_path):
+            logger.warning(f"File not found locally: {file_path}")
+            return ""
+
+        # Check extension
+        if filename.lower().endswith(".pdf"):
+            # Send to PDF Extractor
+            # Note: We need to use synchronous open inside async function carefully, 
+            # or use run_in_executor, but for simplicity here we open/read.
+            with open(file_path, "rb") as f:
+                files = {"file": f}
+                # We use the client passed in, but it's an httpx.AsyncClient.
+                # requests format for files is different from httpx.
+                # httpx uses `files={'file': open(...)}` too but expects async or bytes.
+                # Let's read bytes first.
+                file_content = f.read()
+                
+            resp = await client.post(
+                "http://pdf-extractor:5001/extract",
+                files={"file": (filename, file_content)},
+                timeout=30.0
+            )
+            if resp.status_code == 200:
+                content = resp.json().get("content", "")
+                return f"\n--- Document: {doc_name} ---\n{content[:2000]}"
+            else:
+                logger.error(f"PDF Extractor failed: {resp.status_code}")
+                
+        else:
+            # Text file, read locally
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+                return f"\n--- Document: {doc_name} ---\n{content[:2000]}"
+
     except Exception as e:
-        logger.error(f"Error fetching doc {doc_id}: {e}")
+        logger.error(f"Error reading doc {doc_name}: {e}")
     return ""
 
 async def determine_context(has_grades: bool, reports: list, documents: list) -> tuple:
@@ -62,8 +96,8 @@ async def determine_context(has_grades: bool, reports: list, documents: list) ->
         async with httpx.AsyncClient() as http_client:
             tasks = []
             for doc in documents[:3]:
-                if "_id" in doc:
-                    tasks.append(fetch_document_content(http_client, doc["_id"], doc.get("name", "")))
+                if "url" in doc:
+                    tasks.append(fetch_document_content(http_client, doc["url"], doc.get("name", "")))
             
             if tasks:
                 results = await asyncio.gather(*tasks)
@@ -166,8 +200,10 @@ async def call_ai(course_summary: str, context_type: str = "graded", context_dat
     }
 
 def calculate_course_stats(grades: List[Dict], items: List[Dict]) -> Dict[str, Any]:
-    """Calculate course average and stats"""
+    """Calculate course average and stats (Weighted)"""
+    # Assuming items passed here are already valid (maxPoints > 0 etc) from data_engine
     total_points = sum(item.get("maxPoints", 0) for item in items)
+    # Map item IDs for quick lookup (strings in dicts probably, but let's be safe)
     graded_item_ids = set(g.get("itemId") for g in grades if g.get("itemId"))
     
     earned_points = 0
@@ -175,6 +211,8 @@ def calculate_course_stats(grades: List[Dict], items: List[Dict]) -> Dict[str, A
     
     for item in items:
         item_id = item.get("_id")
+        # Handle string/ObjectId mismatch potential if serialized
+        # But assuming inputs are dicts from data_engine which serialized them.
         if item_id in graded_item_ids:
             grade = next((g for g in grades if g.get("itemId") == item_id), None)
             if grade:
@@ -188,7 +226,11 @@ def calculate_course_stats(grades: List[Dict], items: List[Dict]) -> Dict[str, A
         average = (earned_points / total_evaluated_points * 100)
         has_grades = True
     
-    completion = (len(grades) / len(items) * 100) if items else 0
+    # Weighted completion
+    if total_points > 0:
+        completion = (total_evaluated_points / total_points * 100)
+    else:
+        completion = 0.0
 
     return {
         "average": round(average, 1) if average is not None else None,

@@ -20,22 +20,37 @@ async def get_student_context(db, student_id: str) -> str:
 
         student_name = f"{student.get('firstName', '')} {student.get('lastName', '')}"
 
-        # 1. Fetch Enrollments (Active Courses)
+        # 1. Fetch Active Sessions
+        active_sessions_cursor = db.sessions.find({"state": "ACTIVE"})
+        active_sessions = await active_sessions_cursor.to_list(length=20)
+        active_session_ids = [s["_id"] for s in active_sessions]
+
+        # 2. Fetch Enrollments
         enrollments_cursor = db.enrollments.find({"studentId": sid})
         enrollments = await enrollments_cursor.to_list(length=100)
         
-        course_ids = [e["courseId"] for e in enrollments if "courseId" in e]
+        all_enrolled_course_ids = [e["courseId"] for e in enrollments if "courseId" in e]
+        
+        # 3. Filter Valid Courses (Active Session Only)
+        courses_cursor = db.courses.find({
+            "_id": {"$in": all_enrolled_course_ids},
+            "sessionId": {"$in": active_session_ids}
+        })
+        courses = await courses_cursor.to_list(length=len(all_enrolled_course_ids))
+        
+        # Updated list of valid course IDs
+        course_ids = [c["_id"] for c in courses]
         
         # 2. Fetch Grades (for performance context)
         grades_cursor = db.grades.find({"studentId": sid})
         grades = await grades_cursor.to_list(length=200)
 
-        # 3. Fetch Course Details
+        # 3. Build Context
         courses_context = []
-        courses = []
-        if course_ids:
-            courses_cursor = db.courses.find({"_id": {"$in": course_ids}})
-            courses = await courses_cursor.to_list(length=len(course_ids))
+        
+        if courses:
+            # We already have 'courses' list from step 1
+            pass
             
             # Fetch Teachers
             teacher_ids = [c["teacherId"] for c in courses if "teacherId" in c and c["teacherId"]]
@@ -174,6 +189,7 @@ async def get_student_context(db, student_id: str) -> str:
 
         context_str = f"""Student: {student_name}
 Program: {program_name}
+Total Active Courses: {len(courses)}
         
 === ENROLLED COURSES & MATERIALS ===
 {chr(10).join(rich_courses_context)}

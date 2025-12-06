@@ -17,7 +17,7 @@ import enrollmentRoutes from "./routes/enrollments.js";
 import gradeRoutes from "./routes/grades.js";
 import documentRoutes from "./routes/documents.js";
 import reportRoutes from "./routes/reports.js";
-import iaStudentRoutes from "./routes/iaStudent.js";
+
 
 
 import gradeCategoryRoutes from "./routes/gradeCategories.js";
@@ -53,7 +53,7 @@ app.use("/academic/enrollments", enrollmentRoutes);
 app.use("/academic/grades", gradeRoutes);
 app.use("/academic/documents", documentRoutes);
 app.use("/academic/reports", reportRoutes);
-app.use("/academic/ia", iaStudentRoutes);
+
 
 // Catégories
 app.use("/academic/grades/categories", gradeCategoryRoutes);

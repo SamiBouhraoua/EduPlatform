@@ -84,6 +84,8 @@ services:
     depends_on:
       - mongodb
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4003"]
+    volumes:
+      - ./services/academic-service/uploads:/app/uploads
 
   # =========================
   # 📄 PDF Extractor Service
