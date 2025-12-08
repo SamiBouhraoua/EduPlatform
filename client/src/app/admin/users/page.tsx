@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
-import { Users, GraduationCap, School, Pencil, Trash2, UserPlus } from "lucide-react";
+import { Users, GraduationCap, School, Pencil, Trash2, UserPlus, Check } from "lucide-react";
 
 // --------------------------------------
 const COLLEGE_ID = "69130f6ec3818024a5c994c1";
@@ -15,6 +15,7 @@ type User = {
   role: "teacher" | "student" | "parent";
   firstName?: string;
   lastName?: string;
+  children?: User[]; // Populated
 };
 
 // TOAST
@@ -39,7 +40,7 @@ function Modal({ open, onClose, children }: any) {
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-fadeIn relative" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-fadeIn relative max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <button
           className="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl transition"
           onClick={onClose}
@@ -64,8 +65,9 @@ export default function UsersAdmin() {
     firstName: "",
     lastName: "",
     email: "",
-    role: "teacher",
+    role: "teacher" as "teacher" | "student" | "parent",
     password: "",
+    children: [] as string[],
   });
 
   const [toast, setToast] = useState({ show: false, message: "" });
@@ -86,6 +88,7 @@ export default function UsersAdmin() {
   }, []);
 
   const filtered = items.filter((u) => u.role === filter);
+  const students = items.filter((u) => u.role === "student"); // All students for selection
 
   // OPEN CREATE
   const openCreate = () => {
@@ -96,6 +99,7 @@ export default function UsersAdmin() {
       email: "",
       role: filter,
       password: "",
+      children: [],
     });
     setError(null);
     setModalOpen(true);
@@ -110,6 +114,7 @@ export default function UsersAdmin() {
       email: u.email,
       role: u.role,
       password: "", // OPTIONNEL EN UPDATE
+      children: u.children?.map(c => c._id) || [],
     });
     setError(null);
     setModalOpen(true);
@@ -132,6 +137,7 @@ export default function UsersAdmin() {
           email: form.email,
           role: form.role,
           collegeId: COLLEGE_ID,
+          children: form.role === "parent" ? form.children : [],
         });
         showToast("Utilisateur modifié !");
       } else {
@@ -143,6 +149,7 @@ export default function UsersAdmin() {
         await api.post(`/users`, {
           ...form,
           collegeId: COLLEGE_ID,
+          children: form.role === "parent" ? form.children : [],
         });
 
         showToast("Utilisateur ajouté !");
@@ -162,6 +169,15 @@ export default function UsersAdmin() {
     await api.delete(`/users/${id}`);
     showToast("Utilisateur supprimé !");
     load();
+  };
+
+  // TOGGLE CHILD SELECTION
+  const toggleChild = (childId: string) => {
+    if (form.children.includes(childId)) {
+      setForm({ ...form, children: form.children.filter(id => id !== childId) });
+    } else {
+      setForm({ ...form, children: [...form.children, childId] });
+    }
   };
 
   // ROLE CARDS
@@ -239,8 +255,13 @@ export default function UsersAdmin() {
             className="bg-slate-900/50 border border-white/5 p-4 shadow rounded-xl flex justify-between items-center hover:border-indigo-500/30 transition"
           >
             <div>
-              <p className="text-lg font-semibold text-white">
+              <p className="text-lg font-semibold text-white flex gap-2 items-center">
                 {u.firstName} {u.lastName}
+                {u.children && u.children.length > 0 && (
+                  <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30">
+                    {u.children.length} enfant(s)
+                  </span>
+                )}
               </p>
               <p className="text-slate-400 text-sm">{u.email}</p>
             </div>
@@ -319,6 +340,46 @@ export default function UsersAdmin() {
             <option value="student">Étudiant</option>
             <option value="parent">Parent</option>
           </select>
+
+          {/* PARENT: SELECT CHILDREN */}
+          {form.role === "parent" && (
+            <div className="bg-slate-800/30 p-4 rounded-xl border border-white/10">
+              <label className="text-sm text-indigo-300 font-semibold mb-2 block">
+                Associer des enfants
+              </label>
+
+              {students.length === 0 ? (
+                <p className="text-slate-500 text-sm">Aucun étudiant disponible.</p>
+              ) : (
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-indigo-500/20 scrollbar-track-transparent">
+                  {students.map(student => (
+                    <div
+                      key={student._id}
+                      className={`
+                        flex items-center gap-3 p-2 rounded-lg cursor-pointer border transition-all
+                        ${form.children.includes(student._id)
+                          ? "bg-indigo-600/20 border-indigo-500/50"
+                          : "bg-slate-900/50 border-white/5 hover:bg-slate-800"}
+                      `}
+                      onClick={() => toggleChild(student._id)}
+                    >
+                      <div className={`
+                        w-5 h-5 rounded border flex items-center justify-center transition
+                        ${form.children.includes(student._id) ? "bg-indigo-500 border-indigo-500" : "border-slate-500"}
+                      `}>
+                        {form.children.includes(student._id) && <Check size={12} className="text-white" />}
+                      </div>
+
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-white">{student.firstName} {student.lastName}</span>
+                        <span className="text-xs text-slate-400">{student.email}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-500/20 border border-red-500/30 text-red-400 p-3 rounded-lg text-sm">

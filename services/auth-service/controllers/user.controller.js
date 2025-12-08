@@ -4,9 +4,14 @@ import User from "../models/User.js";
 /**
  * CREATE USER
  */
+// ... imports
+
+/**
+ * CREATE USER
+ */
 export async function createUser(req, res) {
   try {
-    const { email, password, role, firstName, lastName, collegeId } = req.body;
+    const { email, password, role, firstName, lastName, collegeId, children } = req.body;
 
     // Vérifications strictes
     if (!email || !password || !role || !firstName || !lastName || !collegeId) {
@@ -33,7 +38,8 @@ export async function createUser(req, res) {
       role,
       collegeId,
       firstName,
-      lastName
+      lastName,
+      children: children || []
     });
 
     res.json({
@@ -41,7 +47,8 @@ export async function createUser(req, res) {
       email: user.email,
       role: user.role,
       firstName: user.firstName,
-      lastName: user.lastName
+      lastName: user.lastName,
+      children: user.children
     });
 
   } catch (e) {
@@ -62,6 +69,7 @@ export async function listUsers(req, res) {
 
     const users = await User.find(filter)
       .select("-passwordHash")
+      .populate("children", "firstName lastName email")
       .lean();
 
     res.json(users);
@@ -79,15 +87,18 @@ export async function listUsers(req, res) {
 export async function updateUser(req, res) {
   try {
     const { id } = req.params;
-    const { email, role, firstName, lastName } = req.body;
+    const { email, role, firstName, lastName, children } = req.body;
 
     if (!email || !role || !firstName || !lastName) {
       return res.status(400).json({ message: "Champs obligatoires manquants." });
     }
 
+    const updates = { email, role, firstName, lastName };
+    if (children) updates.children = children;
+
     const user = await User.findByIdAndUpdate(
       id,
-      { email, role, firstName, lastName },
+      updates,
       { new: true }
     ).select("-passwordHash");
 
@@ -101,6 +112,7 @@ export async function updateUser(req, res) {
     res.status(500).json({ message: e.message });
   }
 }
+
 
 
 

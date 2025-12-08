@@ -17,6 +17,8 @@ const UserSchema = new mongoose.Schema(
       required: true
     },
 
+    children: [{ type: mongoose.Schema.Types.ObjectId, ref: "User", default: [] }],
+
     firstName: { type: String, required: true },
     lastName: { type: String, required: true }
   },
