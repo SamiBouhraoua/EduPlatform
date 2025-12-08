@@ -1,21 +1,9 @@
 version: "3.9"
 
 services:
-  # =========================
-  # 🧩 MongoDB Database (unique)
-  # =========================
-  mongodb:
-    image: mongo:7
-    container_name: mongo
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
 
-  # =========================
-  # 🌐 API Gateway
-  # =========================
+
+  # API Gateway
   api-gateway:
     build: ./services/api-gateway
     container_name: api-gateway
@@ -32,9 +20,7 @@ services:
       - NODE_ENV=production
     command: ["node", "server.js"]
 
-  # =========================
-  # 🔐 Auth Service
-  # =========================
+  # Auth Service
   auth-service:
     build: ./services/auth-service
     container_name: auth-service
@@ -44,14 +30,11 @@ services:
     env_file:
       - ./services/auth-service/.env
     environment:
-      - MONGO_URI=mongodb://mongo:27017/edu_platform
-    depends_on:
-      - mongodb
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
     command: ["node", "server.js"]
 
-  # =========================
-  # 🎓 Academic Service
-  # =========================
+  # Academic Service
   academic-service:
     build: ./services/academic-service
     container_name: academic-service
@@ -61,17 +44,14 @@ services:
     env_file:
       - ./services/academic-service/.env
     environment:
-      - MONGO_URI=mongodb://mongo:27017/edu_platform
-    depends_on:
-      - mongodb
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
 
     volumes:
       - ./services/academic-service/uploads:/app/uploads
     command: ["node", "server.js"]
 
-  # =========================
-  # 🤖 IA Service (FastAPI)
-  # =========================
+  # IA Service (FastAPI)
   ia-service:
     build:
       context: ./services/ia-service
@@ -81,15 +61,14 @@ services:
       - "4003:4003"
     env_file:
       - ./services/ia-service/.env
-    depends_on:
-      - mongodb
+    environment:
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4003"]
     volumes:
       - ./services/academic-service/uploads:/app/uploads
 
-  # =========================
   # 📄 PDF Extractor Service
-  # =========================
   pdf-extractor:
     build: ./services/pdf-extractor
     container_name: pdf-extractor
@@ -98,9 +77,7 @@ services:
       - "5001:5001"
     command: ["python", "app.py"]
 
-  # =========================
-  # 💬 Chat AI Service
-  # =========================
+  # Chat AI Service
   chatai-service:
     build: ./services/chatai-service
     container_name: chatai-service
@@ -110,9 +87,7 @@ services:
     env_file:
       - ./services/ia-service/.env
     environment:
-      - MONGO_URI=mongodb://mongo:27017/edu_platform
-    depends_on:
-      - mongodb
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
 
-volumes:
-  mongo_data:
+
+
