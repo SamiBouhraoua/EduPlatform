@@ -1,0 +1,113 @@
+version: "3.9"
+
+services:
+
+  # API Gateway
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: api-gateway
+    restart: always
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./services/api-gateway/.env
+    depends_on:
+      - auth-service
+      - academic-service
+      - ia-service
+    environment:
+      - NODE_ENV=development
+    command: ["node", "server.js"]
+
+  # Auth Service
+  auth-service:
+    build: ./services/auth-service
+    container_name: auth-service
+    restart: always
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./services/auth-service/.env
+    environment:
+      # Use same Mongo URI
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+    command: ["node", "server.js"]
+
+  # Academic Service
+  academic-service:
+    build: ./services/academic-service
+    container_name: academic-service
+    restart: always
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./services/academic-service/.env
+    environment:
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+    volumes:
+      - ./services/academic-service/uploads:/app/uploads
+    command: ["node", "server.js"]
+
+  # IA Service (FastAPI)
+  ia-service:
+    build:
+      context: ./services/ia-service
+    container_name: ia-service
+    restart: always
+    ports:
+      - "4003:4003"
+    env_file:
+      - ./services/ia-service/.env
+    environment:
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4003"]
+    volumes:
+      - ./services/academic-service/uploads:/app/uploads
+
+  # PDF Extractor Service
+  pdf-extractor:
+    build: ./services/pdf-extractor
+    container_name: pdf-extractor
+    restart: always
+    ports:
+      - "5001:5001"
+    command: ["python", "app.py"]
+
+  # Chat AI Service
+  chatai-service:
+    build: ./services/chatai-service
+    container_name: chatai-service
+    restart: always
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./services/ia-service/.env
+    environment:
+      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
+  # (Client + Nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      # No 443 port locally
+    volumes:
+      # Use local config, not production
+      - ./nginx/nginx.local.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - client
+
+  client:
+    build:
+      context: ./client
+      args:
+        # Use localhost for local Docker
+        NEXT_PUBLIC_API_URL: http://localhost:80/api
+    container_name: client
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:80/api
