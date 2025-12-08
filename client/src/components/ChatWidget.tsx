@@ -52,8 +52,9 @@ export default function ChatWidget() {
                 return;
             }
 
-            // API Call - Using localhost:4000 (API Gateway)
-            const response = await fetch("http://localhost:4000/chat/message", {
+            // API Call - Using environment variable
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+            const response = await fetch(`${apiUrl}/chat/message`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
