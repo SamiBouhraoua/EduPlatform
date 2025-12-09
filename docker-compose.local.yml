@@ -33,7 +33,7 @@ services:
       - ./services/auth-service/.env
     environment:
       # Use same Mongo URI
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
     command: ["node", "server.js"]
 
   # Academic Service
@@ -46,7 +46,7 @@ services:
     env_file:
       - ./services/academic-service/.env
     environment:
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
     volumes:
       - ./services/academic-service/uploads:/app/uploads
     command: ["node", "server.js"]
@@ -62,7 +62,7 @@ services:
     env_file:
       - ./services/ia-service/.env
     environment:
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4003"]
     volumes:
       - ./services/academic-service/uploads:/app/uploads
@@ -86,7 +86,7 @@ services:
     env_file:
       - ./services/ia-service/.env
     environment:
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
 
   # (Client + Nginx)
   nginx:

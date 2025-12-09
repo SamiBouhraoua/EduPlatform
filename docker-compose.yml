@@ -33,7 +33,7 @@ services:
     env_file:
       - ./services/auth-service/.env
     environment:
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
 
     command: ["node", "server.js"]
 
@@ -47,7 +47,7 @@ services:
     env_file:
       - ./services/academic-service/.env
     environment:
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
       - PUBLIC_URL=https://eduplatform.college
 
 
@@ -66,7 +66,7 @@ services:
     env_file:
       - ./services/ia-service/.env
     environment:
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
 
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4003"]
     volumes:
@@ -91,7 +91,7 @@ services:
     env_file:
       - ./services/ia-service/.env
     environment:
-      - MONGO_URI=mongodb+srv://samibouhraoua:system@cluster0.mb7ljz2.mongodb.net/edu_platform
+
 
 
 
