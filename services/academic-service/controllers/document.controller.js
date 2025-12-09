@@ -14,7 +14,8 @@ export const uploadDocument = async (req, res) => {
       return res.status(400).json({ message: "Aucun fichier reçu" });
     }
 
-    const fileUrl = `http://localhost:4002/uploads/documents/${req.file.filename}`;
+    const baseUrl = process.env.PUBLIC_URL || "http://localhost:4002";
+    const fileUrl = `${baseUrl}/uploads/documents/${req.file.filename}`;
 
     const doc = await Document.create({
       name,
