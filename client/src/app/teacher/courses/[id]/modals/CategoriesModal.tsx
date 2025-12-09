@@ -22,7 +22,7 @@ export default function CategoriesModal({
   const handleDeleteCategory = async (categoryId: string) => {
     try {
       const res = await fetch(
-        `http://localhost:4002/academic/grades/categories/${categoryId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/academic/grades/categories/${categoryId}`,
         {
           method: "DELETE",
           headers: {
@@ -156,7 +156,7 @@ function ItemsModal({
   // Charger items
   useEffect(() => {
     fetch(
-      `http://localhost:4002/academic/grades/items/by-category/${category._id}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/academic/grades/items/by-category/${category._id}`,
       {
         headers: {
           "x-college-id": localStorage.getItem("collegeId")!,
@@ -174,7 +174,7 @@ function ItemsModal({
 
     try {
       const res = await fetch(
-        `http://localhost:4002/academic/grades/items/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/academic/grades/items/${id}`,
         {
           method: "DELETE",
           headers: {

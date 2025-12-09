@@ -5,7 +5,7 @@ export default function DocumentsModal({ documents, setShowDocsModal, setShowAdd
 
   async function deleteDoc(id: string) {
     try {
-      const response = await fetch(`http://localhost:4002/academic/documents/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/documents/${id}`, {
         method: "DELETE",
         headers: {
           "x-college-id": localStorage.getItem("collegeId")!,

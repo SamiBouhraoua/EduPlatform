@@ -24,8 +24,8 @@ export default function AddItemModal({
     const isEdit = !!editData;
 
     const url = isEdit
-      ? `http://localhost:4002/academic/grades/items/${editData._id}`
-      : `http://localhost:4002/academic/grades/items`;
+      ? `${process.env.NEXT_PUBLIC_API_URL}/academic/grades/items/${editData._id}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/academic/grades/items`;
 
     const method = isEdit ? "PUT" : "POST";
 

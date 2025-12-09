@@ -15,7 +15,7 @@ export default function AddDocumentModal({ courseId, setShowAddDocumentModal, sh
     form.append("file", file);
     form.append("courseId", courseId);
 
-    const response = await fetch("http://localhost:4002/academic/documents/upload", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/documents/upload`, {
       method: "POST",
       headers: {
         "x-college-id": localStorage.getItem("collegeId")!,

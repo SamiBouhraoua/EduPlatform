@@ -25,7 +25,7 @@ export default function StudentReportModal({ student, courseId, showToast, close
     async function loadReports() {
         try {
             const res = await fetch(
-                `http://localhost:4002/academic/reports/${courseId}/${student._id}`,
+                `${process.env.NEXT_PUBLIC_API_URL}/academic/reports/${courseId}/${student._id}`,
                 {
                     headers: {
                         "x-college-id": collegeId!,
@@ -51,7 +51,7 @@ export default function StudentReportModal({ student, courseId, showToast, close
 
         setLoading(true);
 
-        const res = await fetch(`http://localhost:4002/academic/reports`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/reports`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -81,7 +81,7 @@ export default function StudentReportModal({ student, courseId, showToast, close
 
     async function deleteReport(reportId: string) {
         try {
-            const res = await fetch(`http://localhost:4002/academic/reports/${reportId}`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/reports/${reportId}`, {
                 method: "DELETE",
                 headers: {
                     "x-college-id": collegeId!,

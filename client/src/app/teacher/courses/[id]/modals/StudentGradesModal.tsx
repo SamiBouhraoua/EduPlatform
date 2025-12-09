@@ -20,19 +20,19 @@ export default function StudentGradesModal({ student, courseId, showToast, close
     async function loadData() {
         try {
             const [catRes, itemRes, gradeRes] = await Promise.all([
-                fetch(`http://localhost:4002/academic/grades/categories/by-course/${courseId}`, {
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/grades/categories/by-course/${courseId}`, {
                     headers: {
                         "x-college-id": localStorage.getItem("collegeId")!,
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
                 }),
-                fetch(`http://localhost:4002/academic/grades/items/by-course/${courseId}`, {
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/grades/items/by-course/${courseId}`, {
                     headers: {
                         "x-college-id": localStorage.getItem("collegeId")!,
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
                     },
                 }),
-                fetch(`http://localhost:4002/academic/grades/${courseId}`, {
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/grades/${courseId}`, {
                     headers: {
                         "x-college-id": localStorage.getItem("collegeId")!,
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -56,7 +56,7 @@ export default function StudentGradesModal({ student, courseId, showToast, close
 
         setLoading(true);
 
-        const res = await fetch(`http://localhost:4002/academic/grades`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/academic/grades`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

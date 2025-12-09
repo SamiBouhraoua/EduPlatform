@@ -20,8 +20,8 @@ export default function AddCategoryModal({ courseId, setShowAddCategory, showToa
     const isEdit = !!editData;
 
     const url = isEdit
-      ? `http://localhost:4002/academic/grades/categories/${editData._id}`
-      : "http://localhost:4002/academic/grades/categories";
+      ? `${process.env.NEXT_PUBLIC_API_URL}/academic/grades/categories/${editData._id}`
+      : `${process.env.NEXT_PUBLIC_API_URL}/academic/grades/categories`;
 
     const method = isEdit ? "PUT" : "POST";
 
