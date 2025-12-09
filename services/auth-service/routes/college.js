@@ -9,6 +9,7 @@ router.get("/", async (req, res) => {
     const list = await College.find().lean();
     res.json(list);
   } catch (e) {
+    console.error("ERREUR /colleges:", e); // Ajout du log pour debugger
     res.status(500).json({ message: e.message });
   }
 });
