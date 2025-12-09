@@ -18,6 +18,9 @@ services:
       - ia-service
     environment:
       - NODE_ENV=production
+      - AUTH_SERVICE_URL=http://auth-service:4001
+      - ACADEMIC_SERVICE_URL=http://academic-service:4002
+      - IA_SERVICE_URL=http://ia-service:4003
     command: ["node", "server.js"]
 
   # Auth Service
