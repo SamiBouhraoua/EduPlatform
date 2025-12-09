@@ -79,8 +79,16 @@ app.use(
 
 
 // ***** AUTH SERVICE *****
-app.use("/", proxy(AUTH_SERVICE_URL, {
-  proxyReqPathResolver: (req) => req.url
+// ***** AUTH SERVICE *****
+app.use("/", (req, res, next) => {
+  console.log(`[Gateway] Forwarding ${req.method} ${req.url} to ${AUTH_SERVICE_URL}`);
+  next();
+}, proxy(AUTH_SERVICE_URL, {
+  proxyReqPathResolver: (req) => req.url,
+  proxyErrorHandler: (err, res, next) => {
+    console.error(`[Gateway] Proxy Error communicating with ${AUTH_SERVICE_URL}:`, err);
+    res.status(500).json({ message: "Gateway Error: Service Unavailable", error: err.message });
+  }
 }));
 
 app.listen(PORT, () => console.log(`🚀 API Gateway running on :${PORT}`));
