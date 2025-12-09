@@ -12,8 +12,6 @@ import studentRoutes from "./routes/student.js";
 
 const app = express();
 app.use(cors());
-// app.use(express.json()); // <-- Désactivé pour éviter de casser le multipart/form-data des proxys
-
 
 // LOG DES REQUÊTES
 app.use((req, res, next) => {
@@ -80,7 +78,6 @@ app.use(
 );
 
 
-// ***** AUTH SERVICE *****
 // ***** AUTH SERVICE *****
 app.use("/", (req, res, next) => {
   console.log(`[Gateway] Forwarding ${req.method} ${req.url} to ${AUTH_SERVICE_URL}`);
