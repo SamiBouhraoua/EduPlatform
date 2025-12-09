@@ -32,7 +32,6 @@ services:
       - "4001:4001"
     env_file:
       - ./services/auth-service/.env
-    environment:
 
 
     command: ["node", "server.js"]
@@ -65,7 +64,7 @@ services:
       - "4003:4003"
     env_file:
       - ./services/ia-service/.env
-    environment:
+
 
 
     command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4003"]
@@ -90,7 +89,7 @@ services:
       - "5002:5002"
     env_file:
       - ./services/chatai-service/.env
-    environment:
+
 
 
 
