@@ -89,7 +89,7 @@ services:
     ports:
       - "5002:5002"
     env_file:
-      - ./services/ia-service/.env
+      - ./services/chatai-service/.env
     environment:
 
 
