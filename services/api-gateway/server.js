@@ -12,7 +12,8 @@ import studentRoutes from "./routes/student.js";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+// app.use(express.json()); // <-- Désactivé pour éviter de casser le multipart/form-data des proxys
+
 
 // LOG DES REQUÊTES
 app.use((req, res, next) => {
@@ -31,9 +32,10 @@ const {
 app.use(authMiddleware(JWT_SECRET));
 
 // Admin / Teacher routes
-app.use("/admin", adminRoutes({ AUTH_SERVICE_URL, ACADEMIC_SERVICE_URL }));
-app.use("/teacher", teacherRoutes({ ACADEMIC_SERVICE_URL }));
-app.use("/student", studentRoutes({ ACADEMIC_SERVICE_URL }));
+const jsonParser = express.json();
+app.use("/admin", jsonParser, adminRoutes({ AUTH_SERVICE_URL, ACADEMIC_SERVICE_URL }));
+app.use("/teacher", jsonParser, teacherRoutes({ ACADEMIC_SERVICE_URL }));
+app.use("/student", jsonParser, studentRoutes({ ACADEMIC_SERVICE_URL }));
 
 
 // ***** ACADEMIC PROXY *****
