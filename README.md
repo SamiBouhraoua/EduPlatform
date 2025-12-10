@@ -2,8 +2,8 @@
 
 **EduPlatform** is a next-generation Educational Management System (EMS) designed to bridge the gap between administrators, teachers, students, and parents. Powered by advanced AI (Groq), it offers personalized learning insights, document analysis, and seamless communication.
 
-![EduPlatform Banner](https://via.placeholder.com/1200x400?text=EduPlatform+Banner)
-*Note: Replace with actual screenshot*
+<img width="900" height="431" alt="image" src="https://github.com/user-attachments/assets/e53fc238-6ba6-4106-97be-51407d0630b2" />
+
 
 ## 🚀 Key Features
 
